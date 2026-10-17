@@ -58,6 +58,25 @@ setLoading(true);
     });
 };
 
+const handleShowPopular = () => {
+  setLoading(true);
+  axios
+    .get("http://127.0.0.1:8000/api/movies/popular/")
+    .then((response) => {
+      setMovies(response.data.results);
+      setResultsTitle("Popular Movies");
+      setGenre("");
+      setMood("");
+      setRuntime("");
+      setReleasePeriod("");
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.error("Error loading movies:", error);
+      setLoading(false);
+    });
+};
+
   return (
     <>
       <Navbar bg="dark" data-bs-theme="dark" expand="lg" className="px-3">
@@ -155,7 +174,14 @@ setLoading(true);
       </Modal>
 
       <Container className="py-5">
-        <h2 className="mb-4">{resultsTitle}</h2>
+        <div className="d-flex justify-content-between align-items-center mb-4">
+          <h2 className="mb-0">{resultsTitle}</h2>
+          {resultsTitle === "Your Choovie Picks" && (
+            <Button variant="outline-light" onClick={handleShowPopular}>
+              Show Popular Movies
+            </Button>
+          )}
+        </div>
         {loading && <p>Finding your movies...</p>}
       
 
