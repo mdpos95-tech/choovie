@@ -19,6 +19,8 @@ function App() {
   const [mood, setMood] = useState("");
   const [runtime, setRuntime] = useState("");
   const [releasePeriod, setReleasePeriod] = useState("");
+  const [resultsTitle, setResultsTitle] = useState("Popular Movies");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     axios
@@ -32,7 +34,10 @@ function App() {
   }, []);
 
   const handleRecommendation = () => {
+
+setLoading(true);
   axios
+ 
     .get("http://127.0.0.1:8000/api/movies/recommend/", {
       params: {
         genre: genre,
@@ -43,10 +48,13 @@ function App() {
     })
     .then((response) => {
       setMovies(response.data.results);
+      setResultsTitle("Your Choovie Picks");
       setShowPreferences(false);
+      setLoading(false);
     })
     .catch((error) => {
       console.error("Error getting recommendations:", error);
+      setLoading(false);
     });
 };
 
@@ -147,8 +155,8 @@ function App() {
       </Modal>
 
       <Container className="py-5">
-        <h2 className="mb-4">Popular Movies</h2>
-        <p>Movies loaded: {movies.length}</p>
+        <h2 className="mb-4">{resultsTitle}</h2>
+        {loading && <p>Finding your movies...</p>}
       
 
         <Row>
