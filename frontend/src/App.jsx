@@ -31,6 +31,25 @@ function App() {
       });
   }, []);
 
+  const handleRecommendation = () => {
+  axios
+    .get("http://127.0.0.1:8000/api/movies/recommend/", {
+      params: {
+        genre: genre,
+        mood: mood,
+        runtime: runtime,
+        release_period: releasePeriod,
+      },
+    })
+    .then((response) => {
+      setMovies(response.data.results);
+      setShowPreferences(false);
+    })
+    .catch((error) => {
+      console.error("Error getting recommendations:", error);
+    });
+};
+
   return (
     <>
       <Navbar bg="dark" data-bs-theme="dark" expand="lg" className="px-3">
@@ -85,7 +104,7 @@ function App() {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Mood</Form.Label>
-              <Form.Select>
+              <Form.Select value={mood} onChange={(e) => setMood(e.target.value)}>
                 <option>Surprise Me</option>
                 <option>Funny</option>
                 <option>Relaxing</option>
@@ -97,7 +116,7 @@ function App() {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Runtime</Form.Label>
-              <Form.Select>
+              <Form.Select value={runtime} onChange={(e) => setRuntime(e.target.value)}>
                 <option>Any Length</option>
                 <option>Short (under 90 min)</option>
                 <option>Medium (90-120 min)</option>
@@ -106,7 +125,7 @@ function App() {
             </Form.Group>
             <Form.Group className="mb-3">
               <Form.Label>Release Date</Form.Label>
-              <Form.Select>
+              <Form.Select value={releasePeriod} onChange={(e) => setReleasePeriod(e.target.value)}>
                 <option> Any Year</option>
                 <option>2020s</option>
                 <option>2010s</option>
@@ -121,7 +140,7 @@ function App() {
           <Button variant="secondary" onClick={() => setShowPreferences(false)}>
             Cancel
           </Button>
-          <Button variant="danger" onClick={() => setShowPreferences(false)}>
+          <Button variant="danger" onClick={handleRecommendation}>
             Find My Movie
           </Button>
         </Modal.Footer>
