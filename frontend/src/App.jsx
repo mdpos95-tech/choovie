@@ -22,6 +22,7 @@ function App() {
   const [resultsTitle, setResultsTitle] = useState("Popular Movies");
   const [loading, setLoading] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [watchlistMessage, setWatchlistMessage] = useState("");
   const [showAuth, setShowAuth] = useState(false);
   const [authMode, setAuthMode] = useState("login");
   const [authUsername, setAuthUsername] = useState("");
@@ -134,6 +135,43 @@ function App() {
     setAuthToken("");
     setCurrentUser("");
   };
+
+  const handleAddToWatchlist = () => {
+  if (!authToken) {
+    setAuthMode("login");
+    setShowAuth(true);
+    return;
+  }
+
+  if (!selectedMovie) {
+    return;
+  }
+
+  axios
+    .post(
+      "http://127.0.0.1:8000/api/watchlist/",
+      {
+        tmdb_id: selectedMovie.id,
+        title: selectedMovie.title,
+        poster_path: selectedMovie.poster_path || "",
+      },
+      {
+        headers: {
+          Authorization: `Token ${authToken}`,
+        },
+      }
+    )
+    .then(() => {
+      setWatchlistMessage("Added to your watchlist.");
+    })
+    .catch((error) => {
+      if (error.response?.data?.detail) {
+        setWatchlistMessage(error.response.data.detail);
+      } else {
+        setWatchlistMessage("Could not add movie to watchlist.");
+      }
+    });
+};
 
   return (
     <>
@@ -387,7 +425,7 @@ function App() {
                     <Button
                       variant="danger"
                       className="mt-auto"
-                      onClick={() => setSelectedMovie(movie)}>
+                      onClick={() => {setSelectedMovie(movie); setWatchlistMessage("")}}>
                       View Details
                     </Button>
                   </Card.Body>
@@ -440,6 +478,11 @@ function App() {
                   </p>
                 </Col>
               </Row>
+              {watchlistMessage && (
+                <div className="alert alert-info mt-3">
+                  {watchlistMessage}
+                </div>
+              )}
             </Modal.Body>
 
             <Modal.Footer>
@@ -448,6 +491,9 @@ function App() {
                 onClick={() => setSelectedMovie(null)}
               >
                 Close
+              </Button>
+              <Button variant="danger" onClick={handleAddToWatchlist}>
+                +Add to Watchlist
               </Button>
             </Modal.Footer>
           </>
