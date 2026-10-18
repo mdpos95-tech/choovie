@@ -2,6 +2,11 @@ import requests
 from django.conf import settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
+
+from .models import WatchlistItem
+from .serializers import WatchlistItemSerializer
 
 @api_view(['GET'])
 def health_check(request):
@@ -77,3 +82,31 @@ def recommend_movies(request):
         "mood": mood,
         "results": response.json().get("results", []),
     })
+
+
+@api_view(["GET", "POST"])
+@permission_classes([IsAuthenticated])
+def watchlist(request):
+    if request.method == "GET":
+        items = WatchlistItem.objects.filter(user=request.user)
+        serializer = WatchlistItemSerializer(items, many=True)
+        return Response(serializer.data)
+
+    serializer = WatchlistItemSerializer(data=request.data)
+
+    if serializer.is_valid():
+        tmdb_id = serializer.validated_data["tmdb_id"]
+
+        if WatchlistItem.objects.filter(
+            user=request.user,
+            tmdb_id=tmdb_id,
+        ).exists():
+            return Response(
+                {"detail": "Movie is already in your watchlist."},
+                status=400,
+            )
+
+        serializer.save(user=request.user)
+        return Response(serializer.data, status=201)
+
+    return Response(serializer.errors, status=400)
