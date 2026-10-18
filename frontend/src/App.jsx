@@ -21,6 +21,7 @@ function App() {
   const [releasePeriod, setReleasePeriod] = useState("");
   const [resultsTitle, setResultsTitle] = useState("Popular Movies");
   const [loading, setLoading] = useState(false);
+  const [selectedMovie, setSelectedMovie] = useState(null);
 
   useEffect(() => {
     axios
@@ -35,47 +36,47 @@ function App() {
 
   const handleRecommendation = () => {
 
-setLoading(true);
-  axios
- 
-    .get("http://127.0.0.1:8000/api/movies/recommend/", {
-      params: {
-        genre: genre,
-        mood: mood,
-        runtime: runtime,
-        release_period: releasePeriod,
-      },
-    })
-    .then((response) => {
-      setMovies(response.data.results);
-      setResultsTitle("Your Choovie Picks");
-      setShowPreferences(false);
-      setLoading(false);
-    })
-    .catch((error) => {
-      console.error("Error getting recommendations:", error);
-      setLoading(false);
-    });
-};
+    setLoading(true);
+    axios
 
-const handleShowPopular = () => {
-  setLoading(true);
-  axios
-    .get("http://127.0.0.1:8000/api/movies/popular/")
-    .then((response) => {
-      setMovies(response.data.results);
-      setResultsTitle("Popular Movies");
-      setGenre("");
-      setMood("");
-      setRuntime("");
-      setReleasePeriod("");
-      setLoading(false);
-    })
-    .catch((error) => {
-      console.error("Error loading movies:", error);
-      setLoading(false);
-    });
-};
+      .get("http://127.0.0.1:8000/api/movies/recommend/", {
+        params: {
+          genre: genre,
+          mood: mood,
+          runtime: runtime,
+          release_period: releasePeriod,
+        },
+      })
+      .then((response) => {
+        setMovies(response.data.results);
+        setResultsTitle("Your Choovie Picks");
+        setShowPreferences(false);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error getting recommendations:", error);
+        setLoading(false);
+      });
+  };
+
+  const handleShowPopular = () => {
+    setLoading(true);
+    axios
+      .get("http://127.0.0.1:8000/api/movies/popular/")
+      .then((response) => {
+        setMovies(response.data.results);
+        setResultsTitle("Popular Movies");
+        setGenre("");
+        setMood("");
+        setRuntime("");
+        setReleasePeriod("");
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error loading movies:", error);
+        setLoading(false);
+      });
+  };
 
   return (
     <>
@@ -173,6 +174,7 @@ const handleShowPopular = () => {
         </Modal.Footer>
       </Modal>
 
+<section className="movies-section">
       <Container className="py-5">
         <div className="d-flex justify-content-between align-items-center mb-4">
           <h2 className="mb-0">{resultsTitle}</h2>
@@ -183,32 +185,110 @@ const handleShowPopular = () => {
           )}
         </div>
         {loading && <p>Finding your movies...</p>}
-      
+
 
         <Row>
           {movies.map((movie) => (
             <Col lg={3} md={4} sm={6} className="mb-4" key={movie.id}>
-              <Card className="h-100 bg-dark text-white border-secondary">
-                {movie.poster_path && (
-                  <Card.Img
-                    variant="top"
-                    src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                  />
-                )}
+              <Card className="movie-card h-100 bg-dark text-white border-0 shadow">
+                <div className="position-relative">
+                  {movie.poster_path && (
+                    <Card.Img
+                      variant="top"
+                      className="movie-poster"
+                      src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                    />
+                  )}
 
-                <Card.Body>
-                  <Card.Title>{movie.title}</Card.Title>
+                  <span className="movie-rating badge rounded-pill bg-warning text-dark">
+                    ★ {movie.vote_average?.toFixed(1)}
+                  </span>
+                </div>
 
-                  <Card.Text>
-                    {movie.release_date?.slice(0, 4)}
+                <Card.Body className="d-flex flex-column">
+                  <div className="d-flex justify-content-between align-items-start gap-2">
+                    <Card.Title className="movie-title mb-1">
+                      {movie.title}
+                    </Card.Title>
+
+                    <span className="text-secondary small">
+                      {movie.release_date?.slice(0, 4)}
+                    </span>
+                  </div>
+
+                  <Card.Text className="movie-overview text-secondary mt-2">
+                    {movie.overview || "No description available."}
                   </Card.Text>
+                  <Button
+                    variant="danger"
+                    className="mt-auto"
+                    onClick={() => setSelectedMovie(movie)}>
+                    View Details
+                  </Button>
                 </Card.Body>
               </Card>
             </Col>
           ))}
         </Row>
       </Container>
+    </section>
+    <Modal
+  show={selectedMovie !== null}
+  onHide={() => setSelectedMovie(null)}
+  centered
+  size="lg"
+  data-bs-theme="dark"
+>
+  {selectedMovie && (
+    <>
+      <Modal.Header closeButton>
+        <Modal.Title>{selectedMovie.title}</Modal.Title>
+      </Modal.Header>
+
+      <Modal.Body>
+        <Row>
+          <Col md={5}>
+            {selectedMovie.poster_path && (
+              <img
+                src={`https://image.tmdb.org/t/p/w500${selectedMovie.poster_path}`}
+                alt={selectedMovie.title}
+                className="img-fluid rounded"
+              />
+            )}
+          </Col>
+
+          <Col md={7}>
+            <h4>{selectedMovie.title}</h4>
+
+            <p>
+              <strong>Release date:</strong>{" "}
+              {selectedMovie.release_date || "Unknown"}
+            </p>
+
+            <p>
+              <strong>Rating:</strong>{" "}
+              ★ {selectedMovie.vote_average?.toFixed(1)}
+            </p>
+
+            <p>
+              {selectedMovie.overview || "No description available."}
+            </p>
+          </Col>
+        </Row>
+      </Modal.Body>
+
+      <Modal.Footer>
+        <Button
+          variant="secondary"
+          onClick={() => setSelectedMovie(null)}
+        >
+          Close
+        </Button>
+      </Modal.Footer>
     </>
+  )}
+  </Modal>
+</>
   );
 }
 

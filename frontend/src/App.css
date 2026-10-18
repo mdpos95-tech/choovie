@@ -182,3 +182,47 @@
     border-right-color: var(--border);
   }
 }
+
+
+.movie-card {
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.movie-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.45) !important;
+}
+
+.movie-poster {
+  width: 100%;
+  aspect-ratio: 2 / 3;
+  object-fit: cover;
+}
+
+.movie-rating {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: 0.85rem;
+}
+
+.movie-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.movie-overview {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.movie-section{
+background-color: #0f1115;
+color:white;
+min-height: 500px;
+}
