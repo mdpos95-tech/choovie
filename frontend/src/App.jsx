@@ -22,6 +22,11 @@ function App() {
   const [resultsTitle, setResultsTitle] = useState("Popular Movies");
   const [loading, setLoading] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const [showAuth, setShowAuth] = useState(false);
+  const [authMode, setAuthMode] = useState("login");
+  const [authUsername, setAuthUsername] = useState("");
+  const [authEmail, setAuthEmail] = useState("");
+  const [authPassword, setAuthPassword] = useState("");
 
   useEffect(() => {
     axios
@@ -91,7 +96,7 @@ function App() {
               <Nav.Link href="#">Home</Nav.Link>
               <Nav.Link href="#">Discover</Nav.Link>
               <Nav.Link href="#">Watchlist</Nav.Link>
-              <Nav.Link href="#">Login</Nav.Link>
+              <Nav.Link onClick={() => setAuthMode("login") || setShowAuth(true)}>Login</Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>
@@ -173,6 +178,90 @@ function App() {
           </Button>
         </Modal.Footer>
       </Modal>
+<Modal
+  show={showAuth}
+  onHide={() => setShowAuth(false)}
+  centered
+  data-bs-theme="dark"
+>
+  <Modal.Header closeButton>
+    <Modal.Title>
+      {authMode === "login" ? "Login to Choovie" : "Create an Account"}
+    </Modal.Title>
+  </Modal.Header>
+
+  <Modal.Body>
+    <Form>
+      <Form.Group className="mb-3">
+        <Form.Label>Username</Form.Label>
+        <Form.Control
+          type="text"
+          value={authUsername}
+          onChange={(e) => setAuthUsername(e.target.value)}
+          placeholder="Enter username"
+        />
+      </Form.Group>
+
+      {authMode === "register" && (
+        <Form.Group className="mb-3">
+          <Form.Label>Email</Form.Label>
+          <Form.Control
+            type="email"
+            value={authEmail}
+            onChange={(e) => setAuthEmail(e.target.value)}
+            placeholder="Enter email"
+          />
+        </Form.Group>
+      )}
+
+      <Form.Group className="mb-3">
+        <Form.Label>Password</Form.Label>
+        <Form.Control
+          type="password"
+          value={authPassword}
+          onChange={(e) => setAuthPassword(e.target.value)}
+          placeholder="Enter password"
+        />
+      </Form.Group>
+    </Form>
+
+    <div className="text-center mt-3">
+      {authMode === "login" ? (
+        <p>
+          Don't have an account?{" "}
+          <Button
+            variant="link"
+            className="p-0"
+            onClick={() => setAuthMode("register")}
+          >
+            Register
+          </Button>
+        </p>
+      ) : (
+        <p>
+          Already have an account?{" "}
+          <Button
+            variant="link"
+            className="p-0"
+            onClick={() => setAuthMode("login")}
+          >
+            Login
+          </Button>
+        </p>
+      )}
+    </div>
+  </Modal.Body>
+
+  <Modal.Footer>
+    <Button variant="secondary" onClick={() => setShowAuth(false)}>
+      Cancel
+    </Button>
+
+    <Button variant="danger">
+      {authMode === "login" ? "Login" : "Register"}
+    </Button>
+  </Modal.Footer>
+</Modal>      
 
 <section className="movies-section">
       <Container className="py-5">
