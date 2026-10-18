@@ -27,6 +27,9 @@ function App() {
   const [authUsername, setAuthUsername] = useState("");
   const [authEmail, setAuthEmail] = useState("");
   const [authPassword, setAuthPassword] = useState("");
+  const [authToken, setAuthToken] = useState(localStorage.getItem("choovieToken") || "");
+  const [currentUser, setCurrentUser] = useState(localStorage.getItem("choovieUser") || "");
+  const [authError, setAuthError] = useState("");
 
   useEffect(() => {
     axios
@@ -83,6 +86,55 @@ function App() {
       });
   };
 
+  const handleAuthSubmit = () => {
+    setAuthError("");
+
+    const endpoint =
+      authMode === "login"
+        ? "http://127.0.0.1:8000/api/auth/login/"
+        : "http://127.0.0.1:8000/api/auth/register/";
+
+    const data =
+      authMode === "login"
+        ? {
+          username: authUsername,
+          password: authPassword,
+        }
+        : {
+          username: authUsername,
+          email: authEmail,
+          password: authPassword,
+        };
+
+    axios
+      .post(endpoint, data)
+      .then((response) => {
+        const token = response.data.token;
+
+        setAuthToken(token);
+        setCurrentUser(authUsername);
+
+        localStorage.setItem("choovieToken", token);
+        localStorage.setItem("choovieUser", authUsername);
+
+        setShowAuth(false);
+        setAuthUsername("");
+        setAuthEmail("");
+        setAuthPassword("");
+      })
+      .catch((error) => {
+        console.error("Authentication error:", error);
+        setAuthError("Login or registration failed. Please check your details.");
+      });
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("choovieToken");
+    localStorage.removeItem("choovieUser");
+    setAuthToken("");
+    setCurrentUser("");
+  };
+
   return (
     <>
       <Navbar bg="dark" data-bs-theme="dark" expand="lg" className="px-3">
@@ -96,7 +148,26 @@ function App() {
               <Nav.Link href="#">Home</Nav.Link>
               <Nav.Link href="#">Discover</Nav.Link>
               <Nav.Link href="#">Watchlist</Nav.Link>
-              <Nav.Link onClick={() => setAuthMode("login") || setShowAuth(true)}>Login</Nav.Link>
+              {currentUser ? (
+                <>
+                  <Navbar.Text className="me-3">
+                    Hi, {currentUser}
+                  </Navbar.Text>
+
+                  <Nav.Link onClick={handleLogout}>
+                    Logout
+                  </Nav.Link>
+                </>
+              ) : (
+                <Nav.Link
+                  onClick={() => {
+                    setAuthMode("login");
+                    setShowAuth(true);
+                  }}
+                >
+                  Login
+                </Nav.Link>
+              )}
             </Nav>
           </Navbar.Collapse>
         </Container>
@@ -178,206 +249,211 @@ function App() {
           </Button>
         </Modal.Footer>
       </Modal>
-<Modal
-  show={showAuth}
-  onHide={() => setShowAuth(false)}
-  centered
-  data-bs-theme="dark"
->
-  <Modal.Header closeButton>
-    <Modal.Title>
-      {authMode === "login" ? "Login to Choovie" : "Create an Account"}
-    </Modal.Title>
-  </Modal.Header>
+      <Modal
+        show={showAuth}
+        onHide={() => setShowAuth(false)}
+        centered
+        data-bs-theme="dark"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>
+            {authMode === "login" ? "Login to Choovie" : "Create an Account"}
+          </Modal.Title>
+        </Modal.Header>
 
-  <Modal.Body>
-    <Form>
-      <Form.Group className="mb-3">
-        <Form.Label>Username</Form.Label>
-        <Form.Control
-          type="text"
-          value={authUsername}
-          onChange={(e) => setAuthUsername(e.target.value)}
-          placeholder="Enter username"
-        />
-      </Form.Group>
+        <Modal.Body>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>Username</Form.Label>
+              <Form.Control
+                type="text"
+                value={authUsername}
+                onChange={(e) => setAuthUsername(e.target.value)}
+                placeholder="Enter username"
+              />
+            </Form.Group>
 
-      {authMode === "register" && (
-        <Form.Group className="mb-3">
-          <Form.Label>Email</Form.Label>
-          <Form.Control
-            type="email"
-            value={authEmail}
-            onChange={(e) => setAuthEmail(e.target.value)}
-            placeholder="Enter email"
-          />
-        </Form.Group>
-      )}
+            {authMode === "register" && (
+              <Form.Group className="mb-3">
+                <Form.Label>Email</Form.Label>
+                <Form.Control
+                  type="email"
+                  value={authEmail}
+                  onChange={(e) => setAuthEmail(e.target.value)}
+                  placeholder="Enter email"
+                />
+              </Form.Group>
+            )}
 
-      <Form.Group className="mb-3">
-        <Form.Label>Password</Form.Label>
-        <Form.Control
-          type="password"
-          value={authPassword}
-          onChange={(e) => setAuthPassword(e.target.value)}
-          placeholder="Enter password"
-        />
-      </Form.Group>
-    </Form>
-
-    <div className="text-center mt-3">
-      {authMode === "login" ? (
-        <p>
-          Don't have an account?{" "}
-          <Button
-            variant="link"
-            className="p-0"
-            onClick={() => setAuthMode("register")}
-          >
-            Register
-          </Button>
-        </p>
-      ) : (
-        <p>
-          Already have an account?{" "}
-          <Button
-            variant="link"
-            className="p-0"
-            onClick={() => setAuthMode("login")}
-          >
-            Login
-          </Button>
-        </p>
-      )}
-    </div>
-  </Modal.Body>
-
-  <Modal.Footer>
-    <Button variant="secondary" onClick={() => setShowAuth(false)}>
-      Cancel
-    </Button>
-
-    <Button variant="danger">
-      {authMode === "login" ? "Login" : "Register"}
-    </Button>
-  </Modal.Footer>
-</Modal>      
-
-<section className="movies-section">
-      <Container className="py-5">
-        <div className="d-flex justify-content-between align-items-center mb-4">
-          <h2 className="mb-0">{resultsTitle}</h2>
-          {resultsTitle === "Your Choovie Picks" && (
-            <Button variant="outline-light" onClick={handleShowPopular}>
-              Show Popular Movies
-            </Button>
+            <Form.Group className="mb-3">
+              <Form.Label>Password</Form.Label>
+              <Form.Control
+                type="password"
+                value={authPassword}
+                onChange={(e) => setAuthPassword(e.target.value)}
+                placeholder="Enter password"
+              />
+            </Form.Group>
+          </Form>
+          {authError && (
+            <div className="alert alert-danger" mt-3>
+              {authError}
+            </div>
           )}
-        </div>
-        {loading && <p>Finding your movies...</p>}
+
+          <div className="text-center mt-3">
+            {authMode === "login" ? (
+              <p>
+                Don't have an account?{" "}
+                <Button
+                  variant="link"
+                  className="p-0"
+                  onClick={() => setAuthMode("register")}
+                >
+                  Register
+                </Button>
+              </p>
+            ) : (
+              <p>
+                Already have an account?{" "}
+                <Button
+                  variant="link"
+                  className="p-0"
+                  onClick={() => setAuthMode("login")}
+                >
+                  Login
+                </Button>
+              </p>
+            )}
+          </div>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowAuth(false)}>
+            Cancel
+          </Button>
+
+          <Button variant="danger" onClick={handleAuthSubmit}>
+            {authMode === "login" ? "Login" : "Register"}
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
+      <section className="movies-section">
+        <Container className="py-5">
+          <div className="d-flex justify-content-between align-items-center mb-4">
+            <h2 className="mb-0">{resultsTitle}</h2>
+            {resultsTitle === "Your Choovie Picks" && (
+              <Button variant="outline-light" onClick={handleShowPopular}>
+                Show Popular Movies
+              </Button>
+            )}
+          </div>
+          {loading && <p>Finding your movies...</p>}
 
 
-        <Row>
-          {movies.map((movie) => (
-            <Col lg={3} md={4} sm={6} className="mb-4" key={movie.id}>
-              <Card className="movie-card h-100 bg-dark text-white border-0 shadow">
-                <div className="position-relative">
-                  {movie.poster_path && (
-                    <Card.Img
-                      variant="top"
-                      className="movie-poster"
-                      src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
-                    />
-                  )}
+          <Row>
+            {movies.map((movie) => (
+              <Col lg={3} md={4} sm={6} className="mb-4" key={movie.id}>
+                <Card className="movie-card h-100 bg-dark text-white border-0 shadow">
+                  <div className="position-relative">
+                    {movie.poster_path && (
+                      <Card.Img
+                        variant="top"
+                        className="movie-poster"
+                        src={`https://image.tmdb.org/t/p/w500${movie.poster_path}`}
+                      />
+                    )}
 
-                  <span className="movie-rating badge rounded-pill bg-warning text-dark">
-                    ★ {movie.vote_average?.toFixed(1)}
-                  </span>
-                </div>
-
-                <Card.Body className="d-flex flex-column">
-                  <div className="d-flex justify-content-between align-items-start gap-2">
-                    <Card.Title className="movie-title mb-1">
-                      {movie.title}
-                    </Card.Title>
-
-                    <span className="text-secondary small">
-                      {movie.release_date?.slice(0, 4)}
+                    <span className="movie-rating badge rounded-pill bg-warning text-dark">
+                      ★ {movie.vote_average?.toFixed(1)}
                     </span>
                   </div>
 
-                  <Card.Text className="movie-overview text-secondary mt-2">
-                    {movie.overview || "No description available."}
-                  </Card.Text>
-                  <Button
-                    variant="danger"
-                    className="mt-auto"
-                    onClick={() => setSelectedMovie(movie)}>
-                    View Details
-                  </Button>
-                </Card.Body>
-              </Card>
-            </Col>
-          ))}
-        </Row>
-      </Container>
-    </section>
-    <Modal
-  show={selectedMovie !== null}
-  onHide={() => setSelectedMovie(null)}
-  centered
-  size="lg"
-  data-bs-theme="dark"
->
-  {selectedMovie && (
-    <>
-      <Modal.Header closeButton>
-        <Modal.Title>{selectedMovie.title}</Modal.Title>
-      </Modal.Header>
+                  <Card.Body className="d-flex flex-column">
+                    <div className="d-flex justify-content-between align-items-start gap-2">
+                      <Card.Title className="movie-title mb-1">
+                        {movie.title}
+                      </Card.Title>
 
-      <Modal.Body>
-        <Row>
-          <Col md={5}>
-            {selectedMovie.poster_path && (
-              <img
-                src={`https://image.tmdb.org/t/p/w500${selectedMovie.poster_path}`}
-                alt={selectedMovie.title}
-                className="img-fluid rounded"
-              />
-            )}
-          </Col>
+                      <span className="text-secondary small">
+                        {movie.release_date?.slice(0, 4)}
+                      </span>
+                    </div>
 
-          <Col md={7}>
-            <h4>{selectedMovie.title}</h4>
+                    <Card.Text className="movie-overview text-secondary mt-2">
+                      {movie.overview || "No description available."}
+                    </Card.Text>
+                    <Button
+                      variant="danger"
+                      className="mt-auto"
+                      onClick={() => setSelectedMovie(movie)}>
+                      View Details
+                    </Button>
+                  </Card.Body>
+                </Card>
+              </Col>
+            ))}
+          </Row>
+        </Container>
+      </section>
+      <Modal
+        show={selectedMovie !== null}
+        onHide={() => setSelectedMovie(null)}
+        centered
+        size="lg"
+        data-bs-theme="dark"
+      >
+        {selectedMovie && (
+          <>
+            <Modal.Header closeButton>
+              <Modal.Title>{selectedMovie.title}</Modal.Title>
+            </Modal.Header>
 
-            <p>
-              <strong>Release date:</strong>{" "}
-              {selectedMovie.release_date || "Unknown"}
-            </p>
+            <Modal.Body>
+              <Row>
+                <Col md={5}>
+                  {selectedMovie.poster_path && (
+                    <img
+                      src={`https://image.tmdb.org/t/p/w500${selectedMovie.poster_path}`}
+                      alt={selectedMovie.title}
+                      className="img-fluid rounded"
+                    />
+                  )}
+                </Col>
 
-            <p>
-              <strong>Rating:</strong>{" "}
-              ★ {selectedMovie.vote_average?.toFixed(1)}
-            </p>
+                <Col md={7}>
+                  <h4>{selectedMovie.title}</h4>
 
-            <p>
-              {selectedMovie.overview || "No description available."}
-            </p>
-          </Col>
-        </Row>
-      </Modal.Body>
+                  <p>
+                    <strong>Release date:</strong>{" "}
+                    {selectedMovie.release_date || "Unknown"}
+                  </p>
 
-      <Modal.Footer>
-        <Button
-          variant="secondary"
-          onClick={() => setSelectedMovie(null)}
-        >
-          Close
-        </Button>
-      </Modal.Footer>
+                  <p>
+                    <strong>Rating:</strong>{" "}
+                    ★ {selectedMovie.vote_average?.toFixed(1)}
+                  </p>
+
+                  <p>
+                    {selectedMovie.overview || "No description available."}
+                  </p>
+                </Col>
+              </Row>
+            </Modal.Body>
+
+            <Modal.Footer>
+              <Button
+                variant="secondary"
+                onClick={() => setSelectedMovie(null)}
+              >
+                Close
+              </Button>
+            </Modal.Footer>
+          </>
+        )}
+      </Modal>
     </>
-  )}
-  </Modal>
-</>
   );
 }
 
