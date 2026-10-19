@@ -110,3 +110,25 @@ def watchlist(request):
         return Response(serializer.data, status=201)
 
     return Response(serializer.errors, status=400)
+
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def remove_watchlist_item(request, item_id):
+    try:
+        item = WatchlistItem.objects.get(
+            id=item_id,
+            user=request.user,
+        )
+    except WatchlistItem.DoesNotExist:
+        return Response(
+            {"detail": "Watchlist item not found."},
+            status=404,
+        )
+
+    item.delete()
+
+    return Response(
+        {"detail": "Movie removed from watchlist."},
+        status=200,
+    )    

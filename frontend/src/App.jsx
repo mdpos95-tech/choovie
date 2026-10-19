@@ -173,6 +173,39 @@ function App() {
     });
 };
 
+const handleShowWatchlist = () => {
+  if (!authToken) {
+    setAuthMode("login");
+    setShowAuth(true);
+    return;
+  }
+
+  setLoading(true);
+
+  axios
+    .get("http://127.0.0.1:8000/api/watchlist/", {
+      headers: {
+        Authorization: `Token ${authToken}`,
+      },
+    })
+    .then((response) => {
+      const watchlistMovies = response.data.map((item) => ({
+        id: item.tmdb_id,
+        title: item.title,
+        poster_path: item.poster_path,
+        overview: "",
+      }));
+
+      setMovies(watchlistMovies);
+      setResultsTitle("My Watchlist");
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.error("Error loading watchlist:", error);
+      setLoading(false);
+    });
+};
+
   return (
     <>
       <Navbar bg="dark" data-bs-theme="dark" expand="lg" className="px-3">
@@ -183,9 +216,9 @@ function App() {
 
           <Navbar.Collapse id="choovie-navbar">
             <Nav className="ms-auto">
-              <Nav.Link href="#">Home</Nav.Link>
-              <Nav.Link href="#">Discover</Nav.Link>
-              <Nav.Link href="#">Watchlist</Nav.Link>
+              <Nav.Link href="#" onClick={handleShowWatchlist}>
+                Watchlist
+              </Nav.Link>
               {currentUser ? (
                 <>
                   <Navbar.Text className="me-3">
