@@ -137,74 +137,99 @@ function App() {
   };
 
   const handleAddToWatchlist = () => {
-  if (!authToken) {
-    setAuthMode("login");
-    setShowAuth(true);
-    return;
-  }
+    if (!authToken) {
+      setAuthMode("login");
+      setShowAuth(true);
+      return;
+    }
 
-  if (!selectedMovie) {
-    return;
-  }
+    if (!selectedMovie) {
+      return;
+    }
 
-  axios
-    .post(
-      "http://127.0.0.1:8000/api/watchlist/",
-      {
-        tmdb_id: selectedMovie.id,
-        title: selectedMovie.title,
-        poster_path: selectedMovie.poster_path || "",
-      },
-      {
+    axios
+      .post(
+        "http://127.0.0.1:8000/api/watchlist/",
+        {
+          tmdb_id: selectedMovie.id,
+          title: selectedMovie.title,
+          poster_path: selectedMovie.poster_path || "",
+        },
+        {
+          headers: {
+            Authorization: `Token ${authToken}`,
+          },
+        }
+      )
+      .then(() => {
+        setWatchlistMessage("Added to your watchlist.");
+      })
+      .catch((error) => {
+        if (error.response?.data?.detail) {
+          setWatchlistMessage(error.response.data.detail);
+        } else {
+          setWatchlistMessage("Could not add movie to watchlist.");
+        }
+      });
+  };
+
+  const handleShowWatchlist = () => {
+    if (!authToken) {
+      setAuthMode("login");
+      setShowAuth(true);
+      return;
+    }
+
+    setLoading(true);
+
+    axios
+      .get("http://127.0.0.1:8000/api/watchlist/", {
         headers: {
           Authorization: `Token ${authToken}`,
         },
-      }
-    )
-    .then(() => {
-      setWatchlistMessage("Added to your watchlist.");
-    })
-    .catch((error) => {
-      if (error.response?.data?.detail) {
-        setWatchlistMessage(error.response.data.detail);
-      } else {
-        setWatchlistMessage("Could not add movie to watchlist.");
-      }
-    });
-};
+      })
+      .then((response) => {
+        const watchlistMovies = response.data.map((item) => ({
+          id: item.tmdb_id,
+          watchlistItemId: item.id,
+          title: item.title,
+          poster_path: item.poster_path,
+          overview: "",
+        }));
 
-const handleShowWatchlist = () => {
-  if (!authToken) {
-    setAuthMode("login");
-    setShowAuth(true);
-    return;
-  }
+        setMovies(watchlistMovies);
+        setResultsTitle("My Watchlist");
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error loading watchlist:", error);
+        setLoading(false);
+      });
+  };
 
-  setLoading(true);
+  const handleRemoveFromWatchlist = () => {
+    if (!selectedMovie?.watchlistItemId) {
+      return;
+    }
 
-  axios
-    .get("http://127.0.0.1:8000/api/watchlist/", {
-      headers: {
-        Authorization: `Token ${authToken}`,
-      },
-    })
-    .then((response) => {
-      const watchlistMovies = response.data.map((item) => ({
-        id: item.tmdb_id,
-        title: item.title,
-        poster_path: item.poster_path,
-        overview: "",
-      }));
-
-      setMovies(watchlistMovies);
-      setResultsTitle("My Watchlist");
-      setLoading(false);
-    })
-    .catch((error) => {
-      console.error("Error loading watchlist:", error);
-      setLoading(false);
-    });
-};
+    axios
+      .delete(
+        `http://127.0.0.1:8000/api/watchlist/${selectedMovie.watchlistItemId}/`,
+        {
+          headers: {
+            Authorization: `Token ${authToken}`,
+          },
+        }
+      )
+      .then(() => {
+        setSelectedMovie(null);
+        setWatchlistMessage("");
+        handleShowWatchlist();
+      })
+      .catch((error) => {
+        console.error("Error removing movie from watchlist:", error);
+      });
+  };
 
   return (
     <>
@@ -216,6 +241,12 @@ const handleShowWatchlist = () => {
 
           <Navbar.Collapse id="choovie-navbar">
             <Nav className="ms-auto">
+              <Nav.Link onClick={handleShowPopular}>
+                Home
+              </Nav.Link>
+              <Nav.Link onClick={() => setShowPreferences(true)}>
+                Discover
+              </Nav.Link>
               <Nav.Link href="#" onClick={handleShowWatchlist}>
                 Watchlist
               </Nav.Link>
@@ -422,6 +453,19 @@ const handleShowWatchlist = () => {
           </div>
           {loading && <p>Finding your movies...</p>}
 
+          {resultsTitle === "My Watchlist" && movies.length === 0 && !loading && (
+            <div className="text-center py-5">
+              <h3>Your watchlist is empty</h3>
+              <p className="text-secondary">
+                Add some movies and they will appear here.
+              </p>
+
+              <Button variant="danger" onClick={() => setShowPreferences(true)}>
+                Discover Movies
+              </Button>
+            </div>
+          )}
+
 
           <Row>
             {movies.map((movie) => (
@@ -458,7 +502,7 @@ const handleShowWatchlist = () => {
                     <Button
                       variant="danger"
                       className="mt-auto"
-                      onClick={() => {setSelectedMovie(movie); setWatchlistMessage("")}}>
+                      onClick={() => { setSelectedMovie(movie); setWatchlistMessage("") }}>
                       View Details
                     </Button>
                   </Card.Body>
@@ -525,9 +569,15 @@ const handleShowWatchlist = () => {
               >
                 Close
               </Button>
-              <Button variant="danger" onClick={handleAddToWatchlist}>
-                +Add to Watchlist
-              </Button>
+              {resultsTitle === "My Watchlist" ? (
+                <Button variant="danger" onClick={handleRemoveFromWatchlist}>
+                  Remove from Watchlist
+                </Button>
+              ) : (
+                <Button variant="danger" onClick={handleAddToWatchlist}>
+                  +Add to Watchlist
+                </Button>
+              )}
             </Modal.Footer>
           </>
         )}
