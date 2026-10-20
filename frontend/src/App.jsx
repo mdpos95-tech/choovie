@@ -14,6 +14,7 @@ import MovieDetailsModal from "./components/MovieDetailsModal";
 
 function App() {
   const [movies, setMovies] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [showPreferences, setShowPreferences] = useState(false);
   const [genre, setGenre] = useState("");
   const [mood, setMood] = useState("");
@@ -86,6 +87,31 @@ function App() {
         setLoading(false);
       });
   };
+
+
+  const handleSearch = () => {
+  if (!searchQuery.trim()) {
+    return;
+  }
+
+  setLoading(true);
+
+  axios
+    .get("http://127.0.0.1:8000/api/movies/search/", {
+      params: {
+        query: searchQuery,
+      },
+    })
+    .then((response) => {
+      setMovies(response.data.results);
+      setResultsTitle(`Search Results for "${searchQuery}"`);
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.error("Error searching movies:", error);
+      setLoading(false);
+    });
+};
 
   const handleAuthSubmit = () => {
     setAuthError("");

@@ -27,6 +27,31 @@ def popular_movies(request):
 
     return Response(response.json())
 
+ 
+
+@api_view(["GET"])
+def search_movies(request):
+    query = request.GET.get("query", "").strip()
+
+    if not query:
+        return Response({"results": []})
+
+    url = "https://api.themoviedb.org/3/search/movie"
+
+    params = {
+        "api_key": settings.TMDB_API_KEY,
+        "language": "en-US",
+        "query": query,
+        "page": 1,
+        "include_adult": "false",
+    }
+
+    response = requests.get(url, params=params, timeout=10)
+
+    return Response({
+        "results": response.json().get("results", [])
+    })
+
 @api_view(["GET"])
 def recommend_movies(request):
     genre = request.GET.get("genre", "")
