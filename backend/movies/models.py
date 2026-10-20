@@ -13,6 +13,9 @@ class WatchlistItem(models.Model):
     tmdb_id = models.IntegerField()
     title = models.CharField(max_length=255)
     poster_path = models.CharField(max_length=255, blank=True)
+    release_date = models.CharField(max_length=20, blank=True)
+    overview = models.TextField(blank=True)
+    vote_average = models.FloatField(null=True, blank=True)
     added_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

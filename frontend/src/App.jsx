@@ -154,6 +154,9 @@ function App() {
           tmdb_id: selectedMovie.id,
           title: selectedMovie.title,
           poster_path: selectedMovie.poster_path || "",
+          release_date: selectedMovie.release_date || "",
+          overview: selectedMovie.overview || "",
+          vote_average: selectedMovie.vote_average ?? null,
         },
         {
           headers: {
@@ -194,7 +197,9 @@ function App() {
           watchlistItemId: item.id,
           title: item.title,
           poster_path: item.poster_path,
-          overview: "",
+          release_date: item.release_date,
+          overview: item.overview,
+          vote_average: item.vote_average,
         }));
 
         setMovies(watchlistMovies);
