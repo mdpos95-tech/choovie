@@ -1,4 +1,5 @@
 import requests
+import random
 from django.conf import settings
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -69,6 +70,15 @@ def recommend_movies(request):
         "Thriller": 53,
     }
 
+    mood_genres = {
+    "Funny": [35],
+    "Relaxing": [35, 10749, 10751, 16],
+    "Exciting": [28, 12, 53],
+    "Emotional": [18, 10749],
+    "Dark": [27, 53, 80],
+    "Thought-provoking": [18, 878, 9648],
+}
+
     params = {
         "api_key": settings.TMDB_API_KEY,
         "language": "en-US",
@@ -78,6 +88,10 @@ def recommend_movies(request):
 
     if genre in genre_ids:
         params["with_genres"] = genre_ids[genre]
+    if not genre and mood in mood_genres:
+        params["with_genres"] = "|".join(
+            str(genre_id) for genre_id in mood_genres[mood]
+        )
 
     if runtime == "Under 90 minutes":
         params["with_runtime.lte"] = 90
@@ -103,9 +117,26 @@ def recommend_movies(request):
     url = "https://api.themoviedb.org/3/discover/movie"
     response = requests.get(url, params=params, timeout=10)
 
+    results = response.json().get("results", [])
+
+    if mood == "Surprise Me":
+        random.shuffle(results)
+
+    elif mood in mood_genres:
+        preferred_genres = set(mood_genres[mood])
+
+        mood_matches = [
+            movie
+            for movie in results
+            if preferred_genres.intersection(movie.get("genre_ids", []))
+        ]
+
+        if mood_matches:
+            results = mood_matches
+
     return Response({
         "mood": mood,
-        "results": response.json().get("results", []),
+        "results": results,
     })
 
 
