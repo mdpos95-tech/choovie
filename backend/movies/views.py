@@ -88,7 +88,7 @@ def recommend_movies(request):
 
     if genre in genre_ids:
         params["with_genres"] = genre_ids[genre]
-    if not genre and mood in mood_genres:
+    if genre not in genre_ids and mood in mood_genres:
         params["with_genres"] = "|".join(
             str(genre_id) for genre_id in mood_genres[mood]
         )
