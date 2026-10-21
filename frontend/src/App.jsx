@@ -90,28 +90,28 @@ function App() {
 
 
   const handleSearch = () => {
-  if (!searchQuery.trim()) {
-    return;
-  }
+    if (!searchQuery.trim()) {
+      return;
+    }
 
-  setLoading(true);
+    setLoading(true);
 
-  axios
-    .get("http://127.0.0.1:8000/api/movies/search/", {
-      params: {
-        query: searchQuery,
-      },
-    })
-    .then((response) => {
-      setMovies(response.data.results);
-      setResultsTitle(`Search Results for "${searchQuery}"`);
-      setLoading(false);
-    })
-    .catch((error) => {
-      console.error("Error searching movies:", error);
-      setLoading(false);
-    });
-};
+    axios
+      .get("http://127.0.0.1:8000/api/movies/search/", {
+        params: {
+          query: searchQuery,
+        },
+      })
+      .then((response) => {
+        setMovies(response.data.results);
+        setResultsTitle(`Search Results for "${searchQuery}"`);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error searching movies:", error);
+        setLoading(false);
+      });
+  };
 
   const handleAuthSubmit = () => {
     setAuthError("");
@@ -444,6 +444,24 @@ function App() {
 
       <section className="movies-section">
         <Container className="py-5">
+          <div className="d-flex gap-2 mb-4">
+            <Form.Control
+              type="text"
+              placeholder="Search for a movie..."
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  handleSearch();
+                }
+              }}
+            />
+            
+
+            <Button variant="danger" onClick={handleSearch}>
+              Search
+            </Button>
+          </div>
           <div className="d-flex justify-content-between align-items-center mb-4">
             <h2 className="mb-0">{resultsTitle}</h2>
             {resultsTitle === "Your Choovie Picks" && (
@@ -483,14 +501,14 @@ function App() {
           </Row>
         </Container>
       </section>
-     <MovieDetailsModal
-     movie={selectedMovie}
-     resultsTitle={resultsTitle}
-     watchlistMessage={watchlistMessage}
-     onClose={() => setSelectedMovie(null)}
-     onAddToWatchlist={handleAddToWatchlist}
-     onRemoveFromWatchlist={handleRemoveFromWatchlist}
-   />
+      <MovieDetailsModal
+        movie={selectedMovie}
+        resultsTitle={resultsTitle}
+        watchlistMessage={watchlistMessage}
+        onClose={() => setSelectedMovie(null)}
+        onAddToWatchlist={handleAddToWatchlist}
+        onRemoveFromWatchlist={handleRemoveFromWatchlist}
+      />
     </>
   );
 }
