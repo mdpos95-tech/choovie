@@ -14,8 +14,11 @@ import MovieDetailsModal from "./components/MovieDetailsModal";
 
 function App() {
   const [movies, setMovies] = useState([]);
+  const [recommendationPool, setRecommendationPool] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showPreferences, setShowPreferences] = useState(false);
+  const [showQuickChoose, setShowQuickChoose] = useState(false);
+  const [quickGenre, setQuickGenre] = useState("");
   const [genre, setGenre] = useState("");
   const [mood, setMood] = useState("");
   const [runtime, setRuntime] = useState("");
@@ -58,8 +61,11 @@ function App() {
         },
       })
       .then((response) => {
-        setMovies(response.data.results);
-        setResultsTitle("Your Choovie Picks");
+        const pool = response.data.results;
+
+        setRecommendationPool(pool);
+
+
         setShowPreferences(false);
         setLoading(false);
       })
@@ -67,6 +73,63 @@ function App() {
         console.error("Error getting recommendations:", error);
         setLoading(false);
       });
+  };
+
+  const handleQuickChoose = () => {
+    setLoading(true);
+
+    axios
+      .get("http://127.0.0.1:8000/api/movies/recommend/", {
+        params: {
+          genre: quickGenre,
+          mood: "",
+          runtime: "",
+          release_period: "",
+        },
+      })
+      .then((response) => {
+        const pool = response.data.results;
+
+        setRecommendationPool(pool);
+
+        const shuffledMovies = [...pool].sort(
+          () => Math.random() - 0.5
+        );
+
+        setMovies(shuffledMovies.slice(0, 3));
+        setResultsTitle("Choovie's 3 Picks");
+        setShowQuickChoose(false);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error getting quick recommendations:", error);
+        setLoading(false);
+      });
+  };
+
+  const handleReroll = () => {
+    if (recommendationPool.length === 0) {
+      return;
+    }
+
+    const currentMovieIds = new Set(
+      movies.map((movie) => movie.id)
+    );
+
+    const alternatives = recommendationPool.filter(
+      (movie) => !currentMovieIds.has(movie.id)
+    );
+
+    const poolToUse =
+      alternatives.length >= 3
+        ? alternatives
+        : recommendationPool;
+
+    const shuffledMovies = [...poolToUse].sort(
+      () => Math.random() - 0.5
+    );
+
+    setMovies(shuffledMovies.slice(0, 3));
   };
 
   const handleShowPopular = () => {
@@ -285,9 +348,21 @@ function App() {
             picked around your preferences.
           </p>
 
-          <Button size="lg" variant="danger" onClick={() => setShowPreferences(true)}>
-            Help Me Choose
-          </Button>
+          <div className="d-flex justify-content-center gap-3">
+            <Button
+              variant="danger"
+              onClick={() => setShowPreferences(true)}
+            >
+              Help Me Choose
+            </Button>
+
+            <Button
+              variant="outline-light"
+              onClick={() => setShowQuickChoose(true)}
+            >
+              Choose For Me
+            </Button>
+          </div>
         </Container>
       </section>
       <Modal show={showPreferences} onHide={() => setShowPreferences(false)} centered data-bs-theme="dark">
@@ -348,10 +423,62 @@ function App() {
             Cancel
           </Button>
           <Button variant="danger" onClick={handleRecommendation}>
-            Find My Movie
+            Show Matching Movies
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <Modal
+        show={showQuickChoose}
+        onHide={() => setShowQuickChoose(false)}
+        centered
+        data-bs-theme="dark"
+      >
+        <Modal.Header closeButton>
+          <Modal.Title>Choose For Me</Modal.Title>
+        </Modal.Header>
+
+        <Modal.Body>
+          <p className="text-secondary">
+            Pick a genre and Choovie will choose 3 movies for you.
+          </p>
+
+          <Form.Group>
+            <Form.Label>Genre</Form.Label>
+
+            <Form.Select
+              value={quickGenre}
+              onChange={(event) => setQuickGenre(event.target.value)}
+            >
+              <option value="">Any Genre</option>
+              <option value="Action">Action</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Drama">Drama</option>
+              <option value="Horror">Horror</option>
+              <option value="Romance">Romance</option>
+              <option value="Science Fiction">Science Fiction</option>
+              <option value="Thriller">Thriller</option>
+            </Form.Select>
+          </Form.Group>
+        </Modal.Body>
+
+        <Modal.Footer>
+          <Button
+            variant="secondary"
+            onClick={() => setShowQuickChoose(false)}
+          >
+            Cancel
+          </Button>
+
+          <Button
+            variant="danger"
+            onClick={handleQuickChoose}
+          >
+            Give Me 3 Picks
+          </Button>
+        </Modal.Footer>
+      </Modal>
+
       <Modal
         show={showAuth}
         onHide={() => setShowAuth(false)}
@@ -456,7 +583,7 @@ function App() {
                 }
               }}
             />
-            
+
 
             <Button variant="danger" onClick={handleSearch}>
               Search
@@ -467,6 +594,11 @@ function App() {
             {resultsTitle === "Your Choovie Picks" && (
               <Button variant="outline-light" onClick={handleShowPopular}>
                 Show Popular Movies
+              </Button>
+            )}
+            {resultsTitle === "Choovie's Pick" && (
+              <Button variant="outline-light" onClick={handleReroll}>
+                Try Another
               </Button>
             )}
           </div>
