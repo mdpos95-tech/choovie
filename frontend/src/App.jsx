@@ -596,9 +596,12 @@ function App() {
                 Show Popular Movies
               </Button>
             )}
-            {resultsTitle === "Choovie's Pick" && (
-              <Button variant="outline-light" onClick={handleReroll}>
-                Try Another
+            {resultsTitle === "Choovie's 3 Picks" && (
+              <Button
+                variant="danger"
+                onClick={handleReroll}
+              >
+                Instant Reroll
               </Button>
             )}
           </div>
