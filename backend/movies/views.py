@@ -131,12 +131,11 @@ def recommend_movies(request):
             if preferred_genres.intersection(movie.get("genre_ids", []))
         ]
 
-        if mood_matches:
-            results = mood_matches
+    results = mood_matches
 
     return Response({
-        "mood": mood,
-        "results": results,
+    "mood": mood,
+    "results": results,
     })
 
 
