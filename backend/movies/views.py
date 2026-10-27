@@ -115,28 +115,43 @@ def recommend_movies(request):
         params["primary_release_date.lte"] = end_date
 
     url = "https://api.themoviedb.org/3/discover/movie"
-    response = requests.get(url, params=params, timeout=10)
 
-    results = response.json().get("results", [])
+    results = []
 
-    if mood == "Surprise Me":
-        random.shuffle(results)
+    for page in range(1, 4):
+        params["page"] = page
 
-    elif mood in mood_genres:
-        preferred_genres = set(mood_genres[mood])
+        response = requests.get(
+            url,
+            params=params,
+            timeout=10,
+        )
 
-        mood_matches = [
-            movie
-            for movie in results
-            if preferred_genres.intersection(movie.get("genre_ids", []))
-        ]
+        results.extend(
+            response.json().get("results", [])
+        )
 
-    results = mood_matches
+        unique_movies = {movie["id"]: movie for movie in results}
+        results = list(unique_movies.values())
 
-    return Response({
-    "mood": mood,
-    "results": results,
-    })
+        if mood == "Surprise Me":
+            random.shuffle(results)
+
+        elif mood in mood_genres:
+            preferred_genres = set(mood_genres[mood])
+
+            mood_matches = [
+                movie
+                for movie in results
+                if preferred_genres.intersection(movie.get("genre_ids", []))
+            ]
+
+            results = mood_matches
+
+        return Response({
+        "mood": mood,
+        "results": results,
+        })
 
 
 @api_view(["GET", "POST"])

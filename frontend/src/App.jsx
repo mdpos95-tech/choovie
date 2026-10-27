@@ -15,10 +15,12 @@ import MovieDetailsModal from "./components/MovieDetailsModal";
 function App() {
   const [movies, setMovies] = useState([]);
   const [recommendationPool, setRecommendationPool] = useState([]);
+  const [seenRecommendationIds, setSeenRecommendationIds] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [showPreferences, setShowPreferences] = useState(false);
   const [showQuickChoose, setShowQuickChoose] = useState(false);
   const [quickGenre, setQuickGenre] = useState("");
+  const [quickMood, setQuickMood] = useState("");
   const [genre, setGenre] = useState("");
   const [mood, setMood] = useState("");
   const [runtime, setRuntime] = useState("");
@@ -64,6 +66,8 @@ function App() {
         const pool = response.data.results;
 
         setRecommendationPool(pool);
+        setMovies(pool);
+        setResultsTitle("Your Choovie Picks");
 
 
         setShowPreferences(false);
@@ -76,13 +80,14 @@ function App() {
   };
 
   const handleQuickChoose = () => {
+    setShowQuickChoose(false);
     setLoading(true);
 
     axios
       .get("http://127.0.0.1:8000/api/movies/recommend/", {
         params: {
           genre: quickGenre,
-          mood: "",
+          mood: quickMood,
           runtime: "",
           release_period: "",
         },
@@ -96,9 +101,14 @@ function App() {
           () => Math.random() - 0.5
         );
 
-        setMovies(shuffledMovies.slice(0, 3));
+        const firstPicks = shuffledMovies.slice(0, 3);
+
+        setMovies(firstPicks);
+        setSeenRecommendationIds(
+          firstPicks.map((movie) => movie.id)
+        );
         setResultsTitle("Choovie's 3 Picks");
-        setShowQuickChoose(false);
+        setshowQuickChoose(false);
         setLoading(false);
       })
       .catch((error) => {
@@ -112,24 +122,43 @@ function App() {
       return;
     }
 
-    const currentMovieIds = new Set(
-      movies.map((movie) => movie.id)
+    const unseenMovies = recommendationPool.filter(
+      (movie) => !seenRecommendationIds.includes(movie.id)
     );
 
-    const alternatives = recommendationPool.filter(
-      (movie) => !currentMovieIds.has(movie.id)
-    );
+    if (unseenMovies.length < 3) {
+      const currentMovieIds = movies.map((movie) => movie.id);
 
-    const poolToUse =
-      alternatives.length >= 3
-        ? alternatives
-        : recommendationPool;
+      const freshCycle = recommendationPool.filter(
+        (movie) => !currentMovieIds.includes(movie.id)
+      );
 
-    const shuffledMovies = [...poolToUse].sort(
+      const shuffledMovies = [...freshCycle].sort(
+        () => Math.random() - 0.5
+      );
+
+      const nextPicks = shuffledMovies.slice(0, 3);
+
+      setMovies(nextPicks);
+      setSeenRecommendationIds(
+        nextPicks.map((movie) => movie.id)
+      );
+
+      return;
+    }
+
+    const shuffledMovies = [...unseenMovies].sort(
       () => Math.random() - 0.5
     );
 
-    setMovies(shuffledMovies.slice(0, 3));
+    const nextPicks = shuffledMovies.slice(0, 3);
+
+    setMovies(nextPicks);
+
+    setSeenRecommendationIds((previousIds) => [
+      ...previousIds,
+      ...nextPicks.map((movie) => movie.id),
+    ]);
   };
 
   const handleShowPopular = () => {
@@ -458,6 +487,22 @@ function App() {
               <option value="Romance">Romance</option>
               <option value="Science Fiction">Science Fiction</option>
               <option value="Thriller">Thriller</option>
+            </Form.Select>
+          </Form.Group>
+          <Form.Group className="mt-3">
+            <Form.Label>Mood</Form.Label>
+
+            <Form.Select
+              value={quickMood}
+              onChange={(e) => setQuickMood(e.target.value)}
+            >
+              <option value="">Any Mood</option>
+              <option value="Funny">Funny</option>
+              <option value="Relaxing">Relaxing</option>
+              <option value="Exciting">Exciting</option>
+              <option value="Emotional">Emotional</option>
+              <option value="Dark">Dark</option>
+              <option value="Thought-provoking">Thought-provoking</option>
             </Form.Select>
           </Form.Group>
         </Modal.Body>
