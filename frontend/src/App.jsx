@@ -117,6 +117,35 @@ function App() {
       });
   };
 
+  const handleSurpriseMe = () => {
+  setLoading(true);
+
+  axios
+    .get("http://127.0.0.1:8000/api/movies/recommend/", {
+      params: {
+        genre: "",
+        mood: "",
+        runtime: "",
+        release_period: "",
+      },
+    })
+    .then((response) => {
+      const pool = response.data.results;
+
+      const shuffledMovies = [...pool].sort(
+        () => Math.random() - 0.5
+      );
+
+      setMovies(shuffledMovies.slice(0, 3));
+      setResultsTitle("Surprise Picks");
+      setLoading(false);
+    })
+    .catch((error) => {
+      console.error("Error getting surprise picks:", error);
+      setLoading(false);
+    });
+};
+
   const handleReroll = () => {
     if (recommendationPool.length === 0) {
       return;
@@ -391,6 +420,11 @@ function App() {
             >
               Choose For Me
             </Button>
+            <Button 
+              variant="outline-warning"
+              onClick={handleSurpriseMe}>
+                Surprise Me
+              </Button>
           </div>
         </Container>
       </section>
