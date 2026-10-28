@@ -27,3 +27,10 @@ img {
   margin-left:auto;
   margin-right:auto;
 }
+
+.movies-section {
+  background-color: #0f1115;
+  color: white;
+  min-height: 500px;
+  padding: 3rem 0;
+}

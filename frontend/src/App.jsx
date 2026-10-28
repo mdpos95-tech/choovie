@@ -406,7 +406,7 @@ function App() {
             picked around your preferences.
           </p>
 
-          <div className="d-flex justify-content-center gap-3">
+          <div className="d-flex justify-content-center gap-3 flex-wrap">
             <Button
               variant="danger"
               onClick={() => setShowPreferences(true)}
@@ -651,7 +651,7 @@ function App() {
       <section className="movies-section">
         <Container className="py-5">
           <div className="d-flex gap-2 mb-4">
-            <Form.Control
+            <Form.Control size="lg"
               type="text"
               placeholder="Search for a movie..."
               value={searchQuery}
@@ -664,12 +664,17 @@ function App() {
             />
 
 
-            <Button variant="danger" onClick={handleSearch}>
+            <Button variant="danger"
+            size="lg"
+            className="px-4"
+             onClick={handleSearch}>
               Search
             </Button>
           </div>
-          <div className="d-flex justify-content-between align-items-center mb-4">
-            <h2 className="mb-0">{resultsTitle}</h2>
+          <div className="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+            <h2 className="mb-0" fw-bold>
+              {resultsTitle}
+            </h2>
             {resultsTitle === "Your Choovie Picks" && (
               <Button variant="outline-light" onClick={handleShowPopular}>
                 Show Popular Movies

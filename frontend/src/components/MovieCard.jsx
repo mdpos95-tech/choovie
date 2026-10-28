@@ -2,7 +2,7 @@ import { Card, Button } from "react-bootstrap";
 
 function MovieCard({ movie, onViewDetails }) {
   return (
-    <Card className="movie-card h-100 bg-dark text-white border-0 shadow">
+    <Card className="movie-card h-100 bg-dark text-white border-0 shadow rounded-4 overflow-hidden">
       <div className="position-relative">
         {movie.poster_path && (
           <Card.Img
@@ -36,7 +36,7 @@ function MovieCard({ movie, onViewDetails }) {
 
         <Button
           variant="danger"
-          className="mt-auto"
+          className="mt-auto w-100"
           onClick={() => onViewDetails(movie)}
         >
           View Details
