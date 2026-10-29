@@ -8,6 +8,7 @@ from rest_framework.decorators import permission_classes
 
 from .models import WatchlistItem, RecommendationLog
 from .serializers import WatchlistItemSerializer
+from .ai_recommender import rank_movies
 
 @api_view(['GET'])
 def health_check(request):
@@ -148,8 +149,24 @@ def recommend_movies(request):
 
             results = mood_matches
 
-        RecommendationLog.objects.create(
-    user=request.user if request.user.is_authenticated else None,
+    ai_picks = []
+
+    if request.GET.get("mode") == "Choose For Me":
+        try:
+            ai_picks = rank_movies(
+                results[:20],
+                genre=genre,
+                mood=mood,
+                runtime=runtime,
+                release_period=release_period,
+                limit=3,
+            )
+        except Exception as error:
+            print("OpenAI ranking failed:", error)
+            ai_picks = results[:3]
+
+    RecommendationLog.objects.create(
+    user=requests.request.user if request.user.is_authenticated else None,
     mode=request.GET.get("mode", "Recommendation"),
     genre=genre,
     mood=mood,
@@ -157,10 +174,11 @@ def recommend_movies(request):
     release_period=release_period,
 )
 
-        return Response({
-        "mood": mood,
-        "results": results,
-        })
+    return Response({
+    "mood": mood,
+    "results": results,
+    "ai_picks": ai_picks,
+    })
 
 
 @api_view(["GET", "POST"])

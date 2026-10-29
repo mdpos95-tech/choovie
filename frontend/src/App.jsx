@@ -91,10 +91,12 @@ function App() {
           mood: quickMood,
           runtime: "",
           release_period: "",
+          mode: "Choose For Me",
         },
       })
       .then((response) => {
         const pool = response.data.results;
+        const aiPicks = response.data.ai_picks || [];
 
         setRecommendationPool(pool);
 
@@ -102,7 +104,10 @@ function App() {
           () => Math.random() - 0.5
         );
 
-        const firstPicks = shuffledMovies.slice(0, 3);
+        const firstPicks = 
+        aiPicks.length === 3
+          ? aiPicks
+          : shuffledMovies.slice(0, 3);
 
         setMovies(firstPicks);
         setSeenRecommendationIds(
@@ -128,6 +133,7 @@ function App() {
         mood: "",
         runtime: "",
         release_period: "",
+        mode:"Surprise Me",
       },
     })
     .then((response) => {

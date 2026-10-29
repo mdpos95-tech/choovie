@@ -124,6 +124,7 @@ MAILERS = {
 }
 
 TMDB_API_KEY = os.getenv('TMDB_API_KEY')
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
