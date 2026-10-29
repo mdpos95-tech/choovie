@@ -60,6 +60,7 @@ function App() {
           mood: mood,
           runtime: runtime,
           release_period: releasePeriod,
+          mode: "Help Me Choose",
         },
       })
       .then((response) => {

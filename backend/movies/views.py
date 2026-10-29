@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import permission_classes
 
-from .models import WatchlistItem
+from .models import WatchlistItem, RecommendationLog
 from .serializers import WatchlistItemSerializer
 
 @api_view(['GET'])
@@ -147,6 +147,15 @@ def recommend_movies(request):
             ]
 
             results = mood_matches
+
+        RecommendationLog.objects.create(
+    user=request.user if request.user.is_authenticated else None,
+    mode=request.GET.get("mode", "Recommendation"),
+    genre=genre,
+    mood=mood,
+    runtime=runtime,
+    release_period=release_period,
+)
 
         return Response({
         "mood": mood,
