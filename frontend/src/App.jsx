@@ -11,6 +11,7 @@ import {
 import ChoovieNavbar from "./components/ChoovieNavbar";
 import MovieCard from "./components/MovieCard";
 import MovieDetailsModal from "./components/MovieDetailsModal";
+import "./App.css";
 
 function App() {
   const [movies, setMovies] = useState([]);

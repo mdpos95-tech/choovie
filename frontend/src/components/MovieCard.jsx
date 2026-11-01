@@ -1,7 +1,8 @@
 import { Card, Button } from "react-bootstrap";
 import { useState } from "react";
 
-function MovieCard({ movie, onViewDetails, onAddToWatchlist, isInWatchlist, }) {
+function MovieCard({ movie, onViewDetails, onAddToWatchlist, isInWatchlist }) {
+    const [showFullOverview, setShowFullOverview] = useState(false);
     return (
         <Card className="movie-card h-100 bg-dark text-white border-0 shadow rounded-4 overflow-hidden">
             <div className="position-relative">
@@ -31,9 +32,24 @@ function MovieCard({ movie, onViewDetails, onAddToWatchlist, isInWatchlist, }) {
                     </span>
                 </div>
 
-                <Card.Text className="movie-overview text-secondary mt-2">
-                    {movie.overview || "No description available."}
+                <Card.Text className="text-secondary mt-2">
+                    {movie.overview
+                        ? showFullOverview
+                            ? movie.overview
+                            : `${movie.overview.slice(0, 120)}${movie.overview.length > 120 ? "..." : ""
+                            }`
+                        : "No description available."}
                 </Card.Text>
+
+                {movie.overview?.length > 120 && (
+                    <Button
+                        variant="link"
+                        className="p-0 mb-3 text-light text-decoration-none"
+                        onClick={() => setShowFullOverview(!showFullOverview)}
+                    >
+                        {showFullOverview ? "Less" : "More"}
+                    </Button>
+                )}
                 <div className="d-flex gap-2 mt-auto">
                     <Button
                         variant="danger"
@@ -46,7 +62,7 @@ function MovieCard({ movie, onViewDetails, onAddToWatchlist, isInWatchlist, }) {
                         variant={isInWatchlist ? "success" : "outline-light"}
                         onClick={() => onAddToWatchlist(movie)}
                         aria-label={'Add ${movie.title} to watchlist'}>
-                            {isInWatchlist ? "✔" : "+"}
+                        {isInWatchlist ? "✔" : "+"}
                     </Button>
                 </div>
             </Card.Body>
