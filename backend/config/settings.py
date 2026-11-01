@@ -138,11 +138,11 @@ TMDB_API_KEY = os.getenv('TMDB_API_KEY')
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
 
 CORS_ALLOWED_ORIGINS = [
-    os.getenv(
-    "CORS_ALLOWED_ORIGINS",    
     "http://localhost:5173",
-    ).split(",")
 ]
+FRONTEND_URL = os.getenv("FRONTEND_URL")
+if FRONTEND_URL:
+    CORS_ALLOWED_ORIGINS.append(FRONTEND_URL)
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
