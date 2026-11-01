@@ -1,4 +1,5 @@
 import { Container, Navbar, Nav } from "react-bootstrap";
+import popcornIcon from "../assets/popcorn.png";
 
 function ChoovieNavbar({
   currentUser,
@@ -11,7 +12,13 @@ function ChoovieNavbar({
   return (
     <Navbar bg="dark" data-bs-theme="dark" expand="lg" className="px-3">
       <Container>
-        <Navbar.Brand className="fw-bold fs-3">
+        <Navbar.Brand className="fw-bold fs-3 d-flex align-items-center gap-2">
+            <img 
+            src={popcornIcon}
+            alt="Choovie popcorn logo"
+            width="40"
+            height="40"
+            />
           Choovie
         </Navbar.Brand>
 
