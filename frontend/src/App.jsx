@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import {
   Container,
@@ -39,6 +39,7 @@ function App() {
   const [currentUser, setCurrentUser] = useState(localStorage.getItem("choovieUser") || "");
   const [authError, setAuthError] = useState("");
   const [addedMovieIds, setAddedMovieIds] = useState([]);
+  const moviesSectionRef = useRef(null);
 
   useEffect(() => {
     axios
@@ -75,6 +76,13 @@ function App() {
 
         setShowPreferences(false);
         setLoading(false);
+        setTimeout(() => {
+          moviesSectionRef.current?.scrollIntoView
+            ({
+              behavior: "smooth",
+              block: "start",
+            });
+        }, 0);
       })
       .catch((error) => {
         console.error("Error getting recommendations:", error);
@@ -106,10 +114,10 @@ function App() {
           () => Math.random() - 0.5
         );
 
-        const firstPicks = 
-        aiPicks.length === 3
-          ? aiPicks
-          : shuffledMovies.slice(0, 3);
+        const firstPicks =
+          aiPicks.length === 3
+            ? aiPicks
+            : shuffledMovies.slice(0, 3);
 
         setMovies(firstPicks);
         setSeenRecommendationIds(
@@ -118,6 +126,13 @@ function App() {
         setResultsTitle("Choovie's 3 Picks");
         setshowQuickChoose(false);
         setLoading(false);
+        setTimeout(() => {
+          moviesSectionRef.current?.scrollIntoView
+            ({
+              behavior: "smooth",
+              block: "start",
+            });
+        }, 0);
       })
       .catch((error) => {
         console.error("Error getting quick recommendations:", error);
@@ -126,34 +141,41 @@ function App() {
   };
 
   const handleSurpriseMe = () => {
-  setLoading(true);
+    setLoading(true);
 
-  axios
-    .get("http://127.0.0.1:8000/api/movies/recommend/", {
-      params: {
-        genre: "",
-        mood: "",
-        runtime: "",
-        release_period: "",
-        mode:"Surprise Me",
-      },
-    })
-    .then((response) => {
-      const pool = response.data.results;
+    axios
+      .get("http://127.0.0.1:8000/api/movies/recommend/", {
+        params: {
+          genre: "",
+          mood: "",
+          runtime: "",
+          release_period: "",
+          mode: "Surprise Me",
+        },
+      })
+      .then((response) => {
+        const pool = response.data.results;
 
-      const shuffledMovies = [...pool].sort(
-        () => Math.random() - 0.5
-      );
+        const shuffledMovies = [...pool].sort(
+          () => Math.random() - 0.5
+        );
 
-      setMovies(shuffledMovies.slice(0, 3));
-      setResultsTitle("Surprise Picks");
-      setLoading(false);
-    })
-    .catch((error) => {
-      console.error("Error getting surprise picks:", error);
-      setLoading(false);
-    });
-};
+        setMovies(shuffledMovies.slice(0, 3));
+        setResultsTitle("Surprise Picks");
+        setLoading(false);
+        setTimeout(() => {
+          moviesSectionRef.current?.scrollIntoView
+            ({
+              behavior: "smooth",
+              block: "start",
+            });
+        }, 0);
+      })
+      .catch((error) => {
+        console.error("Error getting surprise picks:", error);
+        setLoading(false);
+      });
+  };
 
   const handleReroll = () => {
     if (recommendationPool.length === 0) {
@@ -333,6 +355,46 @@ function App() {
       });
   };
 
+  const handleToggleWatchlist = (movie) => {
+    if (!addedMovieIds.includes(movie.id)) {
+      handleAddToWatchlist(movie);
+      return;
+    }
+
+    axios
+      .get("http://127.0.0.1:8000/api/watchlist/", {
+        headers: {
+          Authorization: `Token ${authToken}`,
+        },
+      })
+      .then((response) => {
+        const item = response.data.find(
+          (watchlistItem) => watchlistItem.tmdb_id === movie.id
+        );
+
+        if (!item) {
+          return;
+        }
+
+        return axios.delete(
+          `http://127.0.0.1:8000/api/watchlist/${item.id}/`,
+          {
+            headers: {
+              Authorization: `Token ${authToken}`,
+            },
+          }
+        );
+      })
+      .then(() => {
+        setAddedMovieIds((current) =>
+          current.filter((id) => id !== movie.id)
+        );
+      })
+      .catch((error) => {
+        console.error("Error updating watchlist:", error);
+      });
+  };
+
   const handleShowWatchlist = () => {
     if (!authToken) {
       setAuthMode("login");
@@ -359,9 +421,22 @@ function App() {
           vote_average: item.vote_average,
         }));
 
+        setAddedMovieIds(
+          response.data.map((item) => item.tmdb_id)
+        );
+
         setMovies(watchlistMovies);
         setResultsTitle("My Watchlist");
         setLoading(false);
+        setTimeout(() => {
+          moviesSectionRef.current?.scrollIntoView
+            ({
+              behavior: "smooth",
+              block: "start",
+            });
+        }, 0);
+
+
       })
       .catch((error) => {
         console.error("Error loading watchlist:", error);
@@ -430,11 +505,11 @@ function App() {
             >
               Choose For Me
             </Button>
-            <Button 
+            <Button
               variant="outline-warning"
               onClick={handleSurpriseMe}>
-                Surprise Me
-              </Button>
+              Surprise Me
+            </Button>
           </div>
         </Container>
       </section>
@@ -658,7 +733,7 @@ function App() {
         </Modal.Footer>
       </Modal>
 
-      <section className="movies-section">
+      <section className="movies-section" ref={moviesSectionRef}>
         <Container className="py-5">
           <div className="d-flex gap-2 mb-4">
             <Form.Control size="lg"
@@ -675,9 +750,9 @@ function App() {
 
 
             <Button variant="danger"
-            size="lg"
-            className="px-4"
-             onClick={handleSearch}>
+              size="lg"
+              className="px-4"
+              onClick={handleSearch}>
               Search
             </Button>
           </div>
@@ -724,7 +799,7 @@ function App() {
                     setSelectedMovie(movie);
                     setWatchlistMessage("");
                   }}
-                  onAddToWatchlist={handleAddToWatchlist}
+                  onAddToWatchlist={handleToggleWatchlist}
                   isInWatchlist={addedMovieIds.includes(movie.id)}
                 />
               </Col>
