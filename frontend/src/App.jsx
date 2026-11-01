@@ -37,6 +37,7 @@ function App() {
   const [authToken, setAuthToken] = useState(localStorage.getItem("choovieToken") || "");
   const [currentUser, setCurrentUser] = useState(localStorage.getItem("choovieUser") || "");
   const [authError, setAuthError] = useState("");
+  const [addedMovieIds, setAddedMovieIds] = useState([]);
 
   useEffect(() => {
     axios
@@ -290,14 +291,14 @@ function App() {
     setCurrentUser("");
   };
 
-  const handleAddToWatchlist = () => {
+  const handleAddToWatchlist = (movieToAdd = selectedMovie) => {
     if (!authToken) {
       setAuthMode("login");
       setShowAuth(true);
       return;
     }
 
-    if (!selectedMovie) {
+    if (!movieToAdd) {
       return;
     }
 
@@ -305,12 +306,12 @@ function App() {
       .post(
         "http://127.0.0.1:8000/api/watchlist/",
         {
-          tmdb_id: selectedMovie.id,
-          title: selectedMovie.title,
-          poster_path: selectedMovie.poster_path || "",
-          release_date: selectedMovie.release_date || "",
-          overview: selectedMovie.overview || "",
-          vote_average: selectedMovie.vote_average ?? null,
+          tmdb_id: movieToAdd.id,
+          title: movieToAdd.title,
+          poster_path: movieToAdd.poster_path || "",
+          release_date: movieToAdd.release_date || "",
+          overview: movieToAdd.overview || "",
+          vote_average: movieToAdd.vote_average ?? null,
         },
         {
           headers: {
@@ -320,6 +321,7 @@ function App() {
       )
       .then(() => {
         setWatchlistMessage("Added to your watchlist.");
+        setAddedMovieIds((current) => [...current, movieToAdd.id,]);
       })
       .catch((error) => {
         if (error.response?.data?.detail) {
@@ -714,13 +716,15 @@ function App() {
 
           <Row>
             {movies.map((movie) => (
-              <Col lg={3} md={4} sm={6} className="mb-4" key={movie.id}>
+              <Col lg={3} md={4} sm={6} xs={6} className="mb-4" key={movie.id}>
                 <MovieCard
                   movie={movie}
                   onViewDetails={(movie) => {
                     setSelectedMovie(movie);
                     setWatchlistMessage("");
                   }}
+                  onAddToWatchlist={handleAddToWatchlist}
+                  isInWatchlist={addedMovieIds.includes(movie.id)}
                 />
               </Col>
             ))}
