@@ -12,6 +12,7 @@ import ChoovieNavbar from "./components/ChoovieNavbar";
 import MovieCard from "./components/MovieCard";
 import MovieDetailsModal from "./components/MovieDetailsModal";
 import "./App.css";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000";
 
 function App() {
   const [movies, setMovies] = useState([]);
@@ -43,7 +44,7 @@ function App() {
 
   useEffect(() => {
     axios
-      .get("http://127.0.0.1:8000/api/movies/popular/")
+      .get(`${API_BASE_URL}/api/movies/popular/`)
       .then((response) => {
         setMovies(response.data.results);
       })
@@ -57,7 +58,7 @@ function App() {
     setLoading(true);
     axios
 
-      .get("http://127.0.0.1:8000/api/movies/recommend/", {
+      .get(`${API_BASE_URL}/api/movies/recommend/`, {
         params: {
           genre: genre,
           mood: mood,
@@ -95,7 +96,7 @@ function App() {
     setLoading(true);
 
     axios
-      .get("http://127.0.0.1:8000/api/movies/recommend/", {
+      .get(`${API_BASE_URL}/api/movies/recommend/`, {
         params: {
           genre: quickGenre,
           mood: quickMood,
@@ -144,7 +145,7 @@ function App() {
     setLoading(true);
 
     axios
-      .get("http://127.0.0.1:8000/api/movies/recommend/", {
+      .get(`${API_BASE_URL}/api/movies/recommend/`, {
         params: {
           genre: "",
           mood: "",
@@ -224,7 +225,7 @@ function App() {
   const handleShowPopular = () => {
     setLoading(true);
     axios
-      .get("http://127.0.0.1:8000/api/movies/popular/")
+      .get(`${API_BASE_URL}/api/movies/popular/`)
       .then((response) => {
         setMovies(response.data.results);
         setResultsTitle("Popular Movies");
@@ -249,7 +250,7 @@ function App() {
     setLoading(true);
 
     axios
-      .get("http://127.0.0.1:8000/api/movies/search/", {
+      .get(`${API_BASE_URL}/api/movies/search/`, {
         params: {
           query: searchQuery,
         },
@@ -270,8 +271,8 @@ function App() {
 
     const endpoint =
       authMode === "login"
-        ? "http://127.0.0.1:8000/api/auth/login/"
-        : "http://127.0.0.1:8000/api/auth/register/";
+        ? `${API_BASE_URL}/api/auth/login/`
+        : `${API_BASE_URL}/api/auth/register/`;
 
     const data =
       authMode === "login"
@@ -327,7 +328,7 @@ function App() {
 
     axios
       .post(
-        "http://127.0.0.1:8000/api/watchlist/",
+        `${API_BASE_URL}/api/watchlist/`,
         {
           tmdb_id: movieToAdd.id,
           title: movieToAdd.title,
@@ -362,7 +363,7 @@ function App() {
     }
 
     axios
-      .get("http://127.0.0.1:8000/api/watchlist/", {
+      .get(`${API_BASE_URL}/api/watchlist/`, {
         headers: {
           Authorization: `Token ${authToken}`,
         },
@@ -377,7 +378,7 @@ function App() {
         }
 
         return axios.delete(
-          `http://127.0.0.1:8000/api/watchlist/${item.id}/`,
+          `${API_BASE_URL}/api/watchlist/${item.id}/`,
           {
             headers: {
               Authorization: `Token ${authToken}`,
@@ -405,7 +406,7 @@ function App() {
     setLoading(true);
 
     axios
-      .get("http://127.0.0.1:8000/api/watchlist/", {
+      .get(`${API_BASE_URL}/api/watchlist/`, {
         headers: {
           Authorization: `Token ${authToken}`,
         },
@@ -451,7 +452,7 @@ function App() {
 
     axios
       .delete(
-        `http://127.0.0.1:8000/api/watchlist/${selectedMovie.watchlistItemId}/`,
+        `${API_BASE_URL}/api/watchlist/${selectedMovie.watchlistItemId}/`,
         {
           headers: {
             Authorization: `Token ${authToken}`,
