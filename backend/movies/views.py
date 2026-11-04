@@ -54,7 +54,10 @@ def search_movies(request):
         "results": response.json().get("results", [])
     })
 
-@api_view(["GET"])
+@api_view(["GET"]) 
+
+# Builds a filtered TMDB recommendation pool from  the users preferences, optionally ranks results with OpenAI, and logs the request.
+
 def recommend_movies(request):
     genre = request.GET.get("genre", "")
     mood = request.GET.get("mood", "")
@@ -119,6 +122,8 @@ def recommend_movies(request):
 
     results = []
 
+# Fetch multiple TMDB result pages to create a larger pool and reduce repeated movies when reroll is used.
+
     for page in range(1, 4):
         params["page"] = page
 
@@ -128,9 +133,13 @@ def recommend_movies(request):
             timeout=10,
         )
 
+# Map the selected mood to suitable TMDB genres so the recommendations better match the movie the user wants to watch.
+
         results.extend(
             response.json().get("results", [])
         )
+
+# Remove duplicate movies returned across the different TMDB pages.
 
         unique_movies = {movie["id"]: movie for movie in results}
         results = list(unique_movies.values())
@@ -151,6 +160,8 @@ def recommend_movies(request):
 
     ai_picks = []
 
+# Only use OpenAI ranking for "Choose for me" the other results use the filtered TMDB results directly.
+
     if request.GET.get("mode") == "Choose For Me":
         try:
             ai_picks = rank_movies(
@@ -164,6 +175,8 @@ def recommend_movies(request):
         except Exception as error:
             print("OpenAI ranking failed:", error)
             ai_picks = results[:3]
+
+# Store the reccomendation choices for later review in Django admin.
 
     RecommendationLog.objects.create(
     user=requests.request.user if request.user.is_authenticated else None,

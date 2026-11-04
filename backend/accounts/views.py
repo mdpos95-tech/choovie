@@ -9,8 +9,13 @@ from .serializers import RegisterSerializer
 
 @api_view(["POST"])
 @permission_classes([AllowAny])
+
+# Registers a new user, creates an authentication token and returns the token with basic account details.
+
 def register_user(request):
     serializer = RegisterSerializer(data=request.data)
+
+# Create a persistent DRF token so the frontend can authenticate future API requests for this user.
 
     if serializer.is_valid():
         user = serializer.save()

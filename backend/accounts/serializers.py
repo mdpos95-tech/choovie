@@ -9,6 +9,8 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ("username", "email", "password")
 
+# Use Djangos create_user helper so the password is securely hashed before new account is saved to the database.
+
     def create(self, validated_data):
         return User.objects.create_user(
             username=validated_data["username"],

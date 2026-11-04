@@ -5,9 +5,13 @@ from openai import OpenAI
 
 client = OpenAI(api_key=settings.OPENAI_API_KEY)
 
-def rank_movies(movies, genre="", mood="", runtime="", release_period="", limit=3):
+# Uses OpenAI to rank a supplied list of TMDB movies against the users selected preferences and returns the best matching movies.
+
+def rank_movies(movies, genre="", mood="", runtime="", release_period="", limit=3):   
     if not movies:
         return []
+    
+# Reduce each TMDB movie object to only the fields needed by the AI model.
 
     movie_data = [
         {
@@ -51,6 +55,8 @@ Candidates:
         ranked_ids = data.get("movie_ids", [])
     except (json.JSONDecodeError, AttributeError):
         return movies[:limit]
+
+# Convert the returned movie IDs back into the original TMDB movie objects.
 
     movie_lookup = {
         movie.get("id"): movie

@@ -53,6 +53,8 @@ function App() {
       });
   }, []);
 
+  // Requests recommendations using the users selected preferences and updates the results shown on the page.
+
   const handleRecommendation = () => {
 
     setLoading(true);
@@ -90,6 +92,8 @@ function App() {
         setLoading(false);
       });
   };
+
+  // Requests a larger recommendation pool and uses the AI-ranked results for the initial "Choose for me" selection.
 
   const handleQuickChoose = () => {
     setShowQuickChoose(false);
@@ -177,6 +181,8 @@ function App() {
         setLoading(false);
       });
   };
+
+  // Selects a new set of reccomendations while avoiding movies already shown during the current recommendation session.
 
   const handleReroll = () => {
     if (recommendationPool.length === 0) {
@@ -356,6 +362,8 @@ function App() {
       });
   };
 
+  // Adds the movie if it is not already saved, or removes the matching watchlist item if user clicks again.
+
   const handleToggleWatchlist = (movie) => {
     if (!addedMovieIds.includes(movie.id)) {
       handleAddToWatchlist(movie);
@@ -395,6 +403,8 @@ function App() {
         console.error("Error updating watchlist:", error);
       });
   };
+
+  // Loads the authenticated users saved movies and maps the backend watchlist fields into the format used by MovieCard.
 
   const handleShowWatchlist = () => {
     if (!authToken) {
